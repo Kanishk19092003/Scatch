@@ -5,7 +5,7 @@ const ownerModel = require("../models/owner-model");
 if (process.env.NODE_ENV === "development") {
   router.post("/create", async function (req, res) {
     let owners = await ownerModel.find();
-    if (owners.lenght > 0) {
+    if (owners.length > 0) {
       return res.send(503).send("You dont have permission");
     }
 

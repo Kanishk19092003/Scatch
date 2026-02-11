@@ -7,6 +7,8 @@ const path = require('path');
 const ownersRouter = require("./routes/ownersRouter");
 const productsRouter = require("./routes/productsRouter");
 const usersRouter = require("./routes/usersRouter");
+const jwt = require("jsonwebtoken");
+const userModel = require("./models/user-model");
 const productModel = require("./models/product-model");
 const indexRouter = require("./routes/index");
 const expressSession = require("express-session");
@@ -28,6 +30,22 @@ app.use(
 app.use(flash());
 app.use(express.static(path.join(__dirname,"public")));
 app.set("view engine","ejs");
+
+app.use(async (req, res, next) => {
+    if (req.cookies.token) {
+        try {
+            let decode = jwt.verify(req.cookies.token, process.env.JWT_KEY);
+            let user = await userModel.findOne({ email: decode.email }).select("-password");
+            res.locals.user = user;
+        } catch (err) {
+            res.locals.user = null;
+            res.cookie("token", ""); // Clear invalid token
+        }
+    } else {
+        res.locals.user = null;
+    }
+    next();
+});
 
 if (process.env.NODE_ENV === "development") {
     (async function seedDB() {
